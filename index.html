@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#064bb5">
+  <title>Palmeira Azul · Garagens em 3D</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      color: #102d50;
+      background: #eef3f9;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    header {
+      color: white;
+      background: linear-gradient(120deg, #07357b, #0864dc);
+      padding: 32px max(20px, calc((100vw - 1200px) / 2));
+      border-bottom: 6px solid #ffdc32;
+    }
+
+    .brand {
+      margin: 0 0 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 48px);
+      line-height: 1.1;
+    }
+
+    h1 span { color: #ffdc32; }
+
+    header p:last-child {
+      margin-bottom: 0;
+      max-width: 700px;
+      line-height: 1.6;
+      color: #e1edff;
+    }
+
+    main {
+      max-width: 1240px;
+      margin: auto;
+      padding: 24px 20px;
+    }
+
+    .viewer-card {
+      overflow: hidden;
+      border: 1px solid #d8e2ef;
+      border-radius: 22px;
+      background: white;
+      box-shadow: 0 12px 36px #193e6b12;
+    }
+
+    .stage {
+      position: relative;
+      background: radial-gradient(ellipse at center, #fff, #e4ebf5);
+    }
+
+    model-viewer {
+      display: block;
+      width: 100%;
+      height: clamp(360px, 65vh, 720px);
+      --progress-bar-color: #075bd0;
+      --progress-bar-height: 4px;
+    }
+
+    #status {
+      position: absolute;
+      inset: 20px 20px auto;
+      width: fit-content;
+      max-width: calc(100% - 40px);
+      margin: 0;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: #ffffffed;
+      box-shadow: 0 3px 15px #0000000d;
+      font-size: 14px;
+      line-height: 1.5;
+      pointer-events: none;
+    }
+
+    #status[data-error="true"] {
+      color: #8b251c;
+      background: #fff1ee;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 16px;
+      border-top: 1px solid #e3eaf3;
+    }
+
+    button, .file-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 15px;
+      border: 1px solid #cbd8e8;
+      border-radius: 11px;
+      background: white;
+      color: #123962;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    button:hover, .file-label:hover { background: #edf4ff; }
+
+    button:focus-visible, .file-label:focus-within {
+      outline: 3px solid #438bed;
+      outline-offset: 3px;
+    }
+
+    button:disabled { opacity: .45; cursor: default; }
+
+    button[aria-pressed="true"] {
+      background: #0755bd;
+      color: white;
+      border-color: #0755bd;
+    }
+
+    .file-label {
+      position: relative;
+      margin-left: auto;
+      background: #ffdf48;
+      border-color: #ffdf48;
+    }
+
+    .file-label:hover { background: #ffea82; }
+
+    .file-label input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+
+    .hint {
+      margin: 0;
+      padding: 0 18px 18px;
+      color: #53677f;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .note {
+      padding: 20px;
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #dce5f0;
+    }
+
+    .note h2 { margin: 0 0 8px; font-size: 17px; }
+    .note p { margin: 0; line-height: 1.65; color: #53677f; }
+
+    footer {
+      padding: 8px 20px 28px;
+      text-align: center;
+      color: #60758e;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 25px 20px; }
+      main { padding: 16px 12px; }
+      .notes { grid-template-columns: 1fr; }
+      .file-label { margin-left: 0; }
+      .toolbar { gap: 8px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <p class="brand">Condomínio Palmeira Azul · Palmas / TO</p>
+    <h1>Nossas garagens.<br><span>Uma nova perspectiva.</span></h1>
+    <p>
+      Explore a proposta de cobertura contínua para as vagas
+      e veja o conjunto por diferentes ângulos.
+    </p>
+  </header>
+
+  <main>
+    <section class="viewer-card" aria-label="Visualização do projeto">
+      <div class="stage">
+        <model-viewer
+          id="viewer"
+          alt="Modelo tridimensional da proposta de cobertura das garagens"
+          camera-controls
+          touch-action="pan-y"
+          camera-orbit="35deg 65deg auto"
+          field-of-view="35deg"
+          shadow-intensity="1"
+          exposure="1"
+          environment-image="neutral">
+        </model-viewer>
+
+        <p id="status" role="status" aria-live="polite">
+          Preparando o visualizador…
+        </p>
+      </div>
+
+      <div class="toolbar" aria-label="Controles de visualização">
+        <button data-orbit="35deg 65deg auto" disabled>
+          Vista inicial
+        </button>
+        <button data-orbit="0deg 90deg auto" disabled>
+          Vista frontal
+        </button>
+        <button data-orbit="0deg 0deg auto" disabled>
+          Vista superior
+        </button>
+        <button id="rotate" aria-pressed="false" disabled>
+          Girar automaticamente
+        </button>
+
+        <label class="file-label">
+          Abrir outro modelo
+          <input
+            id="file"
+            type="file"
+            accept=".glb"
+            aria-label="Selecionar um modelo GLB do dispositivo">
+        </label>
+      </div>
+
+      <p class="hint">
+        Arraste para girar. Use a roda do mouse ou dois dedos para
+        aproximar e afastar. Um arquivo aberto pelo botão permanece
+        apenas no seu navegador; ele não substitui o projeto publicado.
+      </p>
+    </section>
+
+    <div class="notes">
+      <article class="note">
+        <h2>Uma cobertura para o conjunto</h2>
+        <p>
+          Vagas lado a lado, cobertura contínua e apoios compartilhados.
+          A proposta busca conforto e uniformidade para o estacionamento.
+        </p>
+      </article>
+
+      <article class="note">
+        <h2>Estudo para discussão</h2>
+        <p>
+          Modelo conceitual com dimensões provisórias. A solução final
+          depende da conferência das plantas, do projeto técnico,
+          dos custos e das aprovações necessárias.
+        </p>
+      </article>
+    </div>
+  </main>
+
+  <footer>Palmeira Azul · Proposta de cobertura das garagens</footer>
+
+  <script type="module">
+    const viewer = document.querySelector("#viewer");
+    const status = document.querySelector("#status");
+    const fileInput = document.querySelector("#file");
+    const rotateButton = document.querySelector("#rotate");
+    const buttons = document.querySelectorAll(".toolbar button");
+
+    let localUrl = null;
+    let localModel = false;
+
+    function showStatus(message, error = false) {
+      status.hidden = false;
+      status.textContent = message;
+      status.dataset.error = String(error);
+    }
+
+    function enableControls(enabled) {
+      buttons.forEach(button => button.disabled = !enabled);
+    }
+
+    function stopRotation() {
+      viewer.autoRotate = false;
+      rotateButton.setAttribute("aria-pressed", "false");
+    }
+
+    viewer.addEventListener("load", () => {
+      status.hidden = true;
+      enableControls(true);
+      viewer.cameraTarget = "auto auto auto";
+      viewer.cameraOrbit = "35deg 65deg auto";
+      viewer.fieldOfView = "35deg";
+    });
+
+    viewer.addEventListener("error", () => {
+      enableControls(false);
+      showStatus(
+        localModel
+          ? "Não foi possível abrir este arquivo. Confira se ele é um GLB válido."
+          : "O modelo ainda não está disponível. Tente novamente mais tarde ou abra um arquivo GLB.",
+        true
+      );
+    });
+
+    viewer.addEventListener("progress", event => {
+      const percent = Math.round(event.detail.totalProgress * 100);
+      if (percent < 100) {
+        showStatus(`Carregando o modelo… ${percent}%`);
+      }
+    });
+
+    document.querySelectorAll("[data-orbit]").forEach(button => {
+      button.addEventListener("click", () => {
+        stopRotation();
+        viewer.cameraTarget = "auto auto auto";
+        viewer.cameraOrbit = button.dataset.orbit;
+        viewer.fieldOfView = "35deg";
+      });
+    });
+
+    rotateButton.addEventListener("click", () => {
+      const active = rotateButton.getAttribute("aria-pressed") !== "true";
+      viewer.autoRotate = active;
+      rotateButton.setAttribute("aria-pressed", String(active));
+    });
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith(".glb")) {
+        showStatus("Selecione um arquivo com extensão .glb.", true);
+        fileInput.value = "";
+        return;
+      }
+
+      if (file.size > 100 * 1024 * 1024) {
+        showStatus(
+          "Este arquivo ultrapassa 100 MB. Use uma versão mais leve do modelo.",
+          true
+        );
+        fileInput.value = "";
+        return;
+      }
+
+      enableControls(false);
+      stopRotation();
+      showStatus("Abrindo o modelo selecionado…");
+
+      const previousUrl = localUrl;
+      localUrl = URL.createObjectURL(file);
+      localModel = true;
+      viewer.src = localUrl;
+
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+      fileInput.value = "";
+    });
+
+    window.addEventListener("pagehide", () => {
+      if (localUrl) URL.revokeObjectURL(localUrl);
+    });
+
+    try {
+      await import(
+        "https://unpkg.com/@google/model-viewer@4.0.0/dist/model-viewer.min.js"
+      );
+      await customElements.whenDefined("model-viewer");
+
+      showStatus("Carregando o projeto…");
+      viewer.src = "./modelo.glb";
+    } catch (error) {
+      showStatus(
+        "Não foi possível iniciar o visualizador. Verifique sua conexão e recarregue a página.",
+        true
+      );
+      fileInput.disabled = true;
+      console.error(error);
+    }
+  </script>
+</body>
+</html>
